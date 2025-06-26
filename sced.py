@@ -10,6 +10,7 @@ st.title("⚡️ 3-Node SCED Simulator")
 st.markdown("Set **demand**, **generation costs**, and **line limits**. Generation is optimized to meet demand.")
 
 #test
+#test two
 col1, col2 = st.columns(2)
 
 # === Demand input ===
