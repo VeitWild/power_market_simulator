@@ -4,6 +4,8 @@ import cvxpy as cp
 import networkx as nx
 import matplotlib.pyplot as plt
 
+import seaborn as sns
+
 st.set_page_config(layout="wide")
 st.title("⚡️ 3-Node SCED Simulator")
 
@@ -144,16 +146,50 @@ fig, ax = plt.subplots(figsize=(6, 4))
 nx.draw(G, pos, with_labels=True, node_color="lightblue", node_size=1000, ax=ax, edge_color="gray")
 
 if P.value is not None:
-    for node, coord, price in zip(["A", "B", "C"], pos.values(), lmp):
-        ax.text(coord[0], coord[1]+0.2, f"LMP: {price:.2f}", ha='center', fontsize=10, color='darkgreen')
+    for i, node in enumerate(["A", "B", "C"]):
+        coord = pos[node]
+        g = P.value[i]
+        d = demand[i]
+        price = lmp[i]
 
-
+        label = (
+            f"G: {g:.1f} MW\n"
+            f"D: {d:.1f} MW\n"
+            f"LMP: {price:.2f} $/MWh"
+        )
+        ax.text(
+            coord[0], coord[1] + 0.1,
+            label,
+            ha='center', fontsize=10, color='black',
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray", lw=1)
+        )
+    # Add line flow labels at edge midpoints
     for i, (u, v) in enumerate([("A", "B"), ("B", "C"), ("A", "C")]):
         f = line_flows.value[i]
         mid = (np.array(pos[u]) + np.array(pos[v])) / 2
-        ax.text(mid[0], mid[1], f"{f:.1f} MW", ha='center', fontsize=9, color='darkred')
+        ax.text(mid[0], mid[1]+0.1, f"{f:.1f} MW", ha='center', fontsize=9, color='darkred')
 
 
 
+col_ptdf1, col_ptdf2 = st.columns(2)
 
-st.pyplot(fig)
+# Reuse existing Grid Visualization in left column
+with col_ptdf1:
+    st.pyplot(fig)
+
+
+with col_ptdf2:
+    fig_ptdf, ax_ptdf = plt.subplots(figsize=(5, 4))
+    sns.heatmap(
+        PTDF,
+        annot=True,
+        cmap="coolwarm",
+        xticklabels=["Node A", "Node B", "Node C"],
+        yticklabels=["Line AB", "Line BC", "Line AC"],
+        center=0,
+        fmt=".2f",
+        cbar_kws={'label': 'PTDF Value'},
+        ax=ax_ptdf
+    )
+    ax_ptdf.set_title("PTDF Matrix Heatmap")
+    st.pyplot(fig_ptdf)
